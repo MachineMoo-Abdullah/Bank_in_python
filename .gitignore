@@ -42,7 +42,7 @@ class Account:
             # Append new account
             accounts.append({
                 "Card Number": self.card,
-                "Name":self.name,
+                "Name": self.name,
                 "Password": self.password,
                 "Balance": self.balance
             })
@@ -135,13 +135,6 @@ class Bank:
                     account["Balance"] = self.balance
                     found = True
                     break
-            if not found:
-                accounts.append({
-                    "Card Number": self.card,
-                    "Name": self.name,
-                    "Password": self.password,
-                    "Balance": self.balance
-                })
 
             # Save all accounts
             with open("account.json", "w") as f:
@@ -192,7 +185,7 @@ while True:
         continue
 
     if inpu == 1:
-        account = Account()
+        account = Account()  #object created
         account.create_account()
     elif inpu == 2:
         account = Account()
