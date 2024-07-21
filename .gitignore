@@ -1,0 +1,247 @@
+import time
+import json
+
+time.sleep(5)
+
+
+class Account:
+    def __init__(self):
+        self.card = ""
+        self.name = ""
+        self.password = ""
+        self.balance = 0
+
+    def create_account(self):
+        while True:
+            self.card = input("Enter your CARD (12 digits): ")
+            if len(self.card) == 12 and self.card.isdigit():
+                break
+            else:
+                print("Card length should be 12 digits and numeric.")
+        self.name = input("Enter your Name: ")
+        while True:
+            self.password = input("Enter your password: ")
+            confirm_pass = input("Enter confirm password: ")
+            if self.password == confirm_pass:
+                print("Account created successfully!")
+                break
+            else:
+                print("Passwords do not match!")
+
+        self.save_account()
+
+    def save_account(self):
+        try:
+            # Load existing data or initialize an empty list
+            try:
+                with open("account.json", "r") as f:
+                    accounts = json.load(f)
+            except (FileNotFoundError, json.JSONDecodeError):
+                accounts = []
+
+            # Append new account
+            accounts.append({
+                "Card Number": self.card,
+                "Name":self.name,
+                "Password": self.password,
+                "Balance": self.balance
+            })
+
+            # Save all accounts
+            with open("account.json", "w") as f:
+                json.dump(accounts, f, indent=4)
+            print("Account saved successfully!")
+        except Exception as e:
+            print(f"An unknown error occurred while saving the account: {e}")
+
+    def get_account_data(self):
+        while True:
+            self.card = input("Enter your CARD (12 digits): ")
+            if len(self.card) == 12 and self.card.isdigit():
+                break
+            else:
+                print("Card length should be 12 digits and numeric.")
+
+        try:
+            # Load the JSON data from the file
+            with open("account.json", "r") as file:
+                accounts = json.load(file)
+
+            # Search for the account with the matching card number
+            found = False
+            for account in accounts:
+                if account["Card Number"] == self.card:
+                    print(f"\nCard Number: {account['Card Number']}")
+                    print(f"Name: {account['Name']}")
+                    print(f"Password: {account['Password']}")
+                    print(f"Balance: {account['Balance']}")
+                    found = True
+                    break
+
+            if not found:
+                print("Account not found.")
+
+        except FileNotFoundError:
+            print("Account file not found.")
+        except json.JSONDecodeError:
+            print("Error decoding JSON data.")
+        except Exception as e:
+            print(f"An unknown error occurred: {e}")
+
+
+class Bank:
+
+    def __init__(self):
+        self.card = ""
+        self.name = ""
+        self.password = ""
+        self.balance = 0
+
+    def load_account(self):
+        try:
+            with open("account.json", "r") as f:
+                accounts = json.load(f)
+
+                # Find the account with the matching card number
+                for account in accounts:
+                    if account["Card Number"] == self.card:
+                        self.name = account["Name"]
+                        self.password = account["Password"]
+                        self.balance = account["Balance"]
+                        return
+
+                print("Account not found.")
+        except FileNotFoundError:
+            print("Account file not found. Please create an account first.")
+        except json.JSONDecodeError:
+            print("Error decoding JSON data.")
+        except Exception as e:
+            print(f"An unknown error occurred while loading the account: {e}")
+
+    def save_account(self):
+        try:
+            try:
+                with open("account.json", "r") as f:
+                    accounts = json.load(f)
+            except (FileNotFoundError, json.JSONDecodeError):
+                accounts = []
+
+            # Update existing account or add a new one
+            found = False
+            for account in accounts:
+                if account["Card Number"] == self.card:
+                    account["Name"] = self.name
+                    account["Password"] = self.password
+                    account["Balance"] = self.balance
+                    found = True
+                    break
+            if not found:
+                accounts.append({
+                    "Card Number": self.card,
+                    "Name": self.name,
+                    "Password": self.password,
+                    "Balance": self.balance
+                })
+
+            # Save all accounts
+            with open("account.json", "w") as f:
+                json.dump(accounts, f, indent=4)
+        except Exception as e:
+            print(f"An unknown error occurred while saving the account: {e}")
+
+    def check_balance(self):
+        print(f"Your current Balance is: {self.balance}")
+
+    def withdraw_money(self):
+        try:
+            inp = int(input("Enter amount to withdraw: "))
+            if inp <= self.balance:
+                self.balance -= inp
+                self.save_account()
+                print(f"{inp} withdrawn from your account!")
+            else:
+                print("Not enough money to withdraw!")
+        except ValueError:
+            print("Invalid input! Please enter a valid amount.")
+        except Exception as e:
+            print(f"An unknown error occurred during withdrawal: {e}")
+
+    def deposit_money(self):
+        try:
+            dep = int(input("Enter amount of money to deposit: "))
+            self.balance += dep
+            self.save_account()
+            print(f"{dep} Rs deposited into your bank account.")
+        except ValueError:
+            print("Invalid input! Please enter a valid amount.")
+        except Exception as e:
+            print(f"An unknown error occurred during deposit: {e}")
+
+
+# Main program
+while True:
+    try:
+        inpu = int(input("""
+            Press 1: Account Creation
+            Press 2: Show Account Information
+            Press 3: Perform Operations on Bank Account
+            Press 4: Exit
+            """))
+    except ValueError:
+        print("Invalid input! Please enter a valid choice.")
+        continue
+
+    if inpu == 1:
+        account = Account()
+        account.create_account()
+    elif inpu == 2:
+        account = Account()
+        account.get_account_data()
+    elif inpu == 3:
+        card = input("Enter your CARD (12 digits): ")
+        if len(card) == 12 and card.isdigit():
+            bank_account = Bank()
+            bank_account.card = card
+            bank_account.load_account()
+            if bank_account.password == "":
+                print("Card not found or wrong password.")
+                continue
+
+            try:
+                x = int(input("Please enter your password: "))
+            except ValueError:
+                print("Invalid input! Please enter a valid password.")
+                continue
+
+            if x == int(bank_account.password):
+                while True:
+                    try:
+                        inp = int(input("""
+                            Press 1: Check Balance
+                            Press 2: Withdraw Amount
+                            Press 3: Deposit Money
+                            Press 4: Exit
+                            """))
+                    except ValueError:
+                        print("Invalid input! Please enter a valid choice.")
+                        continue
+
+                    if inp == 1:
+                        bank_account.check_balance()
+                    elif inp == 2:
+                        bank_account.withdraw_money()
+                    elif inp == 3:
+                        bank_account.deposit_money()
+                    elif inp == 4:
+                        break
+                    else:
+                        print("Invalid choice! Please select a valid option.")
+            else:
+                print("Wrong password entered!")
+        else:
+            print("Card length should be 12 digits and numeric.")
+    elif inpu == 4:
+        print("Program finished!")
+        break
+    else:
+        print("Invalid choice! Please select a valid option.")
